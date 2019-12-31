@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-/**
- * Hello world!
- *
- */
 public class App {
 
     static Logger logger = Logger.getLogger(App.class.getName());
