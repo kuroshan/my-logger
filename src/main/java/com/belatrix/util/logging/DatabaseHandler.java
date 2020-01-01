@@ -12,7 +12,6 @@ public class DatabaseHandler extends StreamHandler {
     private LogManager logManager;
     private Connection connection;
     private String sql;
-    private ConsoleHandler c;
 
     public DatabaseHandler() throws SQLException {
         this.configure();
@@ -72,7 +71,8 @@ public class DatabaseHandler extends StreamHandler {
                 Class classFilter = ClassLoader.getSystemClassLoader().loadClass(classNameFilter);
                 return (Filter)classFilter.newInstance();
             }
-        } catch (Exception var5) {
+        } catch (Exception ex) {
+
         }
 
         return filterDefault;
@@ -86,7 +86,7 @@ public class DatabaseHandler extends StreamHandler {
                 Class classFormatter = ClassLoader.getSystemClassLoader().loadClass(classNameFormatter);
                 return (Formatter)classFormatter.newInstance();
             }
-        } catch (Exception var5) {
+        } catch (Exception ex) {
         }
 
         return formatterDefault;
@@ -128,9 +128,7 @@ public class DatabaseHandler extends StreamHandler {
         connectionProps.put("user", user);
         connectionProps.put("password", password);
 
-        Connection connection = DriverManager.getConnection(URL, connectionProps);
-
-        return connection;
+        return DriverManager.getConnection(URL, connectionProps);
     }
 
     void executeSql(LogRecord logRecord) {
@@ -167,7 +165,6 @@ public class DatabaseHandler extends StreamHandler {
                     ps.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    throw new RuntimeException("database error close prepare statement");
                 }
             }
         }
