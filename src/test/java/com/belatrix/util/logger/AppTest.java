@@ -21,7 +21,7 @@ public class AppTest
 
     @BeforeClass
     public static void init() throws SQLException, IOException, ClassNotFoundException {
-        LogManager.getLogManager().readConfiguration(App.class.getClassLoader().getResourceAsStream("myLogger-test.properties"));
+        LogManager.getLogManager().readConfiguration(AppTest.class.getClassLoader().getResourceAsStream("myLogger-test.properties"));
         Class.forName("org.hsqldb.jdbc.JDBCDriver");
         initDatabase();
     }
@@ -31,7 +31,7 @@ public class AppTest
     {
         logger.info("Inicio de sesión");
         logger.warning("Falta habilitar filtros adicionales");
-        logger.severe("No se puedo establecer conexión");
+        logger.severe("No se pudo establecer conexión");
         assertTrue( true );
     }
 
