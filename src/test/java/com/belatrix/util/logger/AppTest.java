@@ -57,12 +57,9 @@ public class AppTest
 
     private static Connection getConnection() throws SQLException {
         String className = "com.belatrix.util.logging.DatabaseHandler";
-        String user = LogManager.getLogManager().getProperty(className + ".user");
-        String password = LogManager.getLogManager().getProperty(className + ".password");
-
         Properties connectionProps = new Properties();
-        connectionProps.put("user", user);
-        connectionProps.put("password", password);
+        connectionProps.put("user", LogManager.getLogManager().getProperty(className + ".user"));
+        connectionProps.put("password", LogManager.getLogManager().getProperty(className + ".password"));
 
         return DriverManager.getConnection("jdbc:hsqldb:mem:logger", connectionProps);
 

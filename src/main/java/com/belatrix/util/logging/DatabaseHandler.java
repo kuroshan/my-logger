@@ -114,14 +114,10 @@ public class DatabaseHandler extends StreamHandler {
     }
 
     Connection createConnection(String className) throws SQLException {
-        String user = logManager.getProperty(className + ".user");
-        String password = logManager.getProperty(className + ".password");
         sql = logManager.getProperty(className + ".sql");
-
         Properties connectionProps = new Properties();
-        connectionProps.put("user", user);
-        connectionProps.put("password", password);
-
+        connectionProps.put("user", logManager.getProperty(className + ".user"));
+        connectionProps.put("password", logManager.getProperty(className + ".password"));
         return DriverManager.getConnection(logManager.getProperty(className + ".URL"), connectionProps);
     }
 
