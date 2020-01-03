@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.Properties;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -20,9 +21,8 @@ public class AppTest
     static Logger logger = Logger.getLogger(AppTest.class.getName());
 
     @BeforeClass
-    public static void init() throws SQLException, IOException, ClassNotFoundException {
+    public static void init() throws SQLException, IOException {
         LogManager.getLogManager().readConfiguration(AppTest.class.getClassLoader().getResourceAsStream("myLogger-test.properties"));
-        Class.forName("org.hsqldb.jdbc.JDBCDriver");
         initDatabase();
     }
 
@@ -31,16 +31,16 @@ public class AppTest
     {
         logger.info("Inicio de sesión");
         logger.warning("Falta habilitar filtros adicionales");
-        logger.severe("No se pudo establecer conexión");
+        logger.severe("No se pudo establecer conexión con el servidor");
         assertTrue( true );
     }
 
     @AfterClass
-    public static void destroy() throws SQLException, ClassNotFoundException, IOException {
+    public static void destroy() throws SQLException {
         try (Connection connection = getConnection(); Statement statement = connection.createStatement();) {
             ResultSet rs = statement.executeQuery("SELECT message, level FROM Log_Values");
             if (rs.next()) {
-                System.out.println(String.format("database:row -> %s", rs.getString("message")));
+                System.out.println(String.format("[ database:row -> %s ]", rs.getString("message")));
             }
             rs.close();
             statement.executeUpdate("DROP TABLE Log_Values");
@@ -56,7 +56,15 @@ public class AppTest
     }
 
     private static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:hsqldb:mem:logger", "test", "test");
+        String className = "com.belatrix.util.logging.DatabaseHandler";
+        String user = LogManager.getLogManager().getProperty(className + ".user");
+        String password = LogManager.getLogManager().getProperty(className + ".password");
+
+        Properties connectionProps = new Properties();
+        connectionProps.put("user", user);
+        connectionProps.put("password", password);
+
+        return DriverManager.getConnection("jdbc:hsqldb:mem:logger", connectionProps);
 
     }
 }

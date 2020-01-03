@@ -9,6 +9,8 @@ import java.util.logging.*;
 
 public class DatabaseHandler extends StreamHandler {
 
+    static Logger logger = Logger.getLogger(DatabaseHandler.class.getName());
+
     private LogManager logManager;
     private Connection connection;
     private String sql;
@@ -18,7 +20,7 @@ public class DatabaseHandler extends StreamHandler {
     }
 
     @Override
-    public void publish(LogRecord logRecord) {
+    public synchronized void publish(LogRecord logRecord) {
         Filter filter = this.getFilter();
         Level logLevel = this.getLevel();
         Level level = logRecord.getLevel();
@@ -43,12 +45,12 @@ public class DatabaseHandler extends StreamHandler {
     }
 
     @Override
-    public void close() throws SecurityException {
+    public synchronized void close() {
         if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.severe(e.getMessage());
                 throw new RuntimeException("connection closing error");
             }
         }
@@ -69,10 +71,10 @@ public class DatabaseHandler extends StreamHandler {
         try {
             if (classNameFilter != null) {
                 Class classFilter = ClassLoader.getSystemClassLoader().loadClass(classNameFilter);
-                return (Filter)classFilter.newInstance();
+                return (Filter)classFilter.getDeclaredConstructor().newInstance();
             }
         } catch (Exception ex) {
-
+            logger.severe(ex.getMessage());
         }
 
         return filterDefault;
@@ -84,9 +86,10 @@ public class DatabaseHandler extends StreamHandler {
         try {
             if (classNameFormatter != null) {
                 Class classFormatter = ClassLoader.getSystemClassLoader().loadClass(classNameFormatter);
-                return (Formatter)classFormatter.newInstance();
+                return (Formatter)classFormatter.getDeclaredConstructor().newInstance();
             }
         } catch (Exception ex) {
+            logger.severe(ex.getMessage());
         }
 
         return formatterDefault;
@@ -111,24 +114,15 @@ public class DatabaseHandler extends StreamHandler {
     }
 
     Connection createConnection(String className) throws SQLException {
-
-        String driver = logManager.getProperty(className + ".driver");
-        try {
-            Class.forName(driver);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
         String user = logManager.getProperty(className + ".user");
         String password = logManager.getProperty(className + ".password");
-        String URL = logManager.getProperty(className + ".URL");
         sql = logManager.getProperty(className + ".sql");
 
         Properties connectionProps = new Properties();
         connectionProps.put("user", user);
         connectionProps.put("password", password);
 
-        return DriverManager.getConnection(URL, connectionProps);
+        return DriverManager.getConnection(logManager.getProperty(className + ".URL"), connectionProps);
     }
 
     void executeSql(LogRecord logRecord) {
@@ -157,14 +151,14 @@ public class DatabaseHandler extends StreamHandler {
             ps.setInt(2, t);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.severe(e.getMessage());
             throw new RuntimeException("database error execute prepare statement");
         } finally {
             if (ps != null) {
                 try {
                     ps.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    logger.severe(e.getMessage());
                 }
             }
         }
